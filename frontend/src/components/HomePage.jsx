@@ -1,7 +1,7 @@
 import React from 'react';
-import { Search, Eye, PackageCheck } from 'lucide-react';
+import { Search, ShoppingBag, Eye, PackageCheck } from 'lucide-react';
 
-const HomePage = ({ products, onSelectProduct, searchTerm, setSearchTerm, selectedCategory, setSelectedCategory, loading }) => {
+const HomePage = ({ products, onSelectProduct, searchTerm, setSearchTerm, selectedCategory, setSelectedCategory, loading, onBuyProduct }) => {
   const categories = ['All', 'Electronics', 'Fashion', 'Home & Living', 'Accessories'];
 
   const filteredProducts = products.filter(product => {
@@ -17,8 +17,8 @@ const HomePage = ({ products, onSelectProduct, searchTerm, setSearchTerm, select
       {/* Page Header */}
       <div className="bg-white p-4 sm:p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Product Catalog</h1>
-          <p className="text-xs text-gray-500 mt-0.5">Available products</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Store Front</h1>
+          <p className="text-xs text-gray-500 mt-0.5">Explore available products and place your orders.</p>
         </div>
 
         {/* Search Input */}
@@ -34,8 +34,8 @@ const HomePage = ({ products, onSelectProduct, searchTerm, setSearchTerm, select
         </div>
       </div>
 
-      {/* Filter Category Pills - Touch Scrollable */}
-      <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-200">
+      {/* Filter Category Pills */}
+      <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-none">
         {categories.map((cat) => (
           <button
             key={cat}
@@ -51,13 +51,13 @@ const HomePage = ({ products, onSelectProduct, searchTerm, setSearchTerm, select
         ))}
       </div>
 
-      {/* Product Grid - Responsive Grid Columns */}
+      {/* Product Grid */}
       {loading ? (
         <div className="text-center py-16 text-gray-500 text-sm">Loading products...</div>
       ) : filteredProducts.length === 0 ? (
         <div className="bg-white rounded-2xl p-8 sm:p-12 text-center border border-gray-100 shadow-sm space-y-3">
           <PackageCheck className="w-10 sm:w-12 h-10 sm:h-12 text-gray-300 mx-auto" />
-          <h3 className="text-base sm:text-lg font-bold text-gray-800">No Products Found</h3>
+          <h3 className="text-base sm:text-lg font-bold text-gray-800">No Products Available</h3>
           <p className="text-xs sm:text-sm text-gray-500 max-w-md mx-auto">
             No products match the selected criteria.
           </p>
@@ -70,11 +70,14 @@ const HomePage = ({ products, onSelectProduct, searchTerm, setSearchTerm, select
               className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col overflow-hidden group"
             >
               {/* Product Image */}
-              <div className="relative h-44 sm:h-48 bg-gray-100 overflow-hidden">
+              <div 
+                className="relative h-44 sm:h-48 bg-gray-100 overflow-hidden cursor-pointer"
+                onClick={() => onSelectProduct(product)}
+              >
                 <img
                   src={product.imageUrl || 'https://via.placeholder.com/400x300?text=No+Image'}
                   alt={product.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300 block"
                   onError={(e) => {
                     e.target.src = 'https://via.placeholder.com/400x300?text=No+Image';
                   }}
@@ -87,7 +90,10 @@ const HomePage = ({ products, onSelectProduct, searchTerm, setSearchTerm, select
               {/* Product Content */}
               <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3 sm:space-y-4">
                 <div>
-                  <h3 className="font-bold text-gray-900 text-sm sm:text-base line-clamp-1 group-hover:text-brand-600 transition">
+                  <h3 
+                    className="font-bold text-gray-900 text-sm sm:text-base line-clamp-1 cursor-pointer hover:text-brand-600 transition"
+                    onClick={() => onSelectProduct(product)}
+                  >
                     {product.name}
                   </h3>
                   <p className="text-xs text-gray-500 mt-1 line-clamp-2 leading-relaxed">
@@ -95,7 +101,7 @@ const HomePage = ({ products, onSelectProduct, searchTerm, setSearchTerm, select
                   </p>
                 </div>
 
-                <div className="pt-2 border-t border-gray-50 flex items-center justify-between">
+                <div className="pt-3 border-t border-gray-50 flex items-center justify-between gap-2">
                   <div>
                     <span className="text-[10px] sm:text-xs text-gray-400 block font-medium">Price</span>
                     <span className="text-base sm:text-lg font-extrabold text-gray-900">
@@ -103,12 +109,18 @@ const HomePage = ({ products, onSelectProduct, searchTerm, setSearchTerm, select
                     </span>
                   </div>
 
+                  {/* ONLY Buy Button on Store Front (No Edit/Delete for public users) */}
                   <button
-                    onClick={() => onSelectProduct(product)}
-                    className="flex items-center space-x-1 bg-gray-100 hover:bg-brand-600 hover:text-white text-gray-700 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-semibold transition"
+                    onClick={() => onBuyProduct(product)}
+                    disabled={product.stockQuantity <= 0}
+                    className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition shadow-sm active:scale-95 ${
+                      product.stockQuantity > 0
+                        ? 'bg-brand-600 hover:bg-brand-700 text-white'
+                        : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    }`}
                   >
-                    <Eye className="w-3.5 h-3.5" />
-                    <span>View</span>
+                    <ShoppingBag className="w-3.5 h-3.5" />
+                    <span>{product.stockQuantity > 0 ? 'Buy Now' : 'Out of Stock'}</span>
                   </button>
                 </div>
               </div>

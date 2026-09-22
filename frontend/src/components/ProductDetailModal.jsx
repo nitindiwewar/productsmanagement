@@ -1,14 +1,14 @@
 import React from 'react';
-import { X, Box, IndianRupee } from 'lucide-react';
+import { X, Box, IndianRupee, ShoppingBag } from 'lucide-react';
 
-const ProductDetailModal = ({ product, onClose, onEdit }) => {
+const ProductDetailModal = ({ product, onClose, onEdit, onBuy, isAdminView }) => {
   if (!product) return null;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 animate-fadeIn">
       <div className="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl transform transition-all border border-gray-100">
         
-        {/* Full-width Image Header without any side gaps or extra space */}
+        {/* Full-width Image Header without side gaps */}
         <div className="relative w-full h-64 sm:h-80 bg-gray-100 overflow-hidden">
           <img
             src={product.imageUrl || 'https://via.placeholder.com/600x400?text=No+Image'}
@@ -78,15 +78,35 @@ const ProductDetailModal = ({ product, onClose, onEdit }) => {
             >
               Close
             </button>
-            <button
-              onClick={() => {
-                onClose();
-                onEdit(product);
-              }}
-              className="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs sm:text-sm font-semibold rounded-xl transition shadow-md active:scale-95"
-            >
-              Edit Product
-            </button>
+
+            {/* If Admin View -> Show Edit Product. If Store View -> Show Buy Now */}
+            {isAdminView ? (
+              <button
+                onClick={() => {
+                  onClose();
+                  onEdit(product);
+                }}
+                className="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white text-xs sm:text-sm font-semibold rounded-xl transition shadow-md active:scale-95"
+              >
+                Edit Product
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  onClose();
+                  if (onBuy) onBuy(product);
+                }}
+                disabled={product.stockQuantity <= 0}
+                className={`flex items-center space-x-2 px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition shadow-md active:scale-95 ${
+                  product.stockQuantity > 0
+                    ? 'bg-brand-600 hover:bg-brand-700 text-white'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                <ShoppingBag className="w-4 h-4" />
+                <span>{product.stockQuantity > 0 ? 'Buy Now' : 'Out of Stock'}</span>
+              </button>
+            )}
           </div>
         </div>
 

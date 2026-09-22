@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import HomePage from './components/HomePage';
 import AdminDashboard from './components/AdminDashboard';
@@ -18,6 +18,7 @@ function AppContent() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [viewingProduct, setViewingProduct] = useState(null);
+  const [isAdminDetailView, setIsAdminDetailView] = useState(false);
 
   // Toast Notification
   const [toast, setToast] = useState(null);
@@ -46,7 +47,7 @@ function AppContent() {
     fetchProductData();
   }, []);
 
-  // CRUD Handler - Create / Update
+  // CRUD Handler - Create / Update (Admin Only)
   const handleSaveProduct = async (productData) => {
     try {
       if (editingProduct) {
@@ -65,7 +66,7 @@ function AppContent() {
     }
   };
 
-  // CRUD Handler - Delete
+  // CRUD Handler - Delete (Admin Only)
   const handleDeleteProduct = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
@@ -76,6 +77,11 @@ function AppContent() {
         showToast('Failed to delete product.', 'error');
       }
     }
+  };
+
+  // Buy Product Handler (Home Page Users)
+  const handleBuyProduct = (product) => {
+    showToast(`Order placed for ${product.name}! Thank you for your purchase.`);
   };
 
   return (
@@ -99,11 +105,15 @@ function AppContent() {
       {/* URL Route Views */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Routes>
-          {/* Store Front Route */}
+          {/* Store Front Route - PUBLIC ONLY (Buy option only, NO CRUD) */}
           <Route path="/" element={
             <HomePage
               products={products}
-              onSelectProduct={(product) => setViewingProduct(product)}
+              onSelectProduct={(product) => {
+                setViewingProduct(product);
+                setIsAdminDetailView(false);
+              }}
+              onBuyProduct={handleBuyProduct}
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
               selectedCategory={selectedCategory}
@@ -112,7 +122,7 @@ function AppContent() {
             />
           } />
 
-          {/* Separate Admin Dashboard Route */}
+          {/* Admin Dashboard Route - ADMIN ONLY (Full CRUD: Create, Read, Update, Delete) */}
           <Route path="/admin" element={
             <AdminDashboard
               products={products}
@@ -125,7 +135,10 @@ function AppContent() {
                 setIsFormOpen(true);
               }}
               onDeleteProduct={handleDeleteProduct}
-              onViewProduct={(product) => setViewingProduct(product)}
+              onViewProduct={(product) => {
+                setViewingProduct(product);
+                setIsAdminDetailView(true);
+              }}
               onRefresh={fetchProductData}
               loading={loading}
             />
@@ -141,7 +154,7 @@ function AppContent() {
         <p>&copy; 2026 RoyalsWebtech. Product Management System.</p>
       </footer>
 
-      {/* Form Modal (Add / Edit) */}
+      {/* Form Modal (Add / Edit - Admin Only) */}
       <ProductFormModal
         isOpen={isFormOpen}
         onClose={() => {
@@ -160,6 +173,8 @@ function AppContent() {
           setEditingProduct(product);
           setIsFormOpen(true);
         }}
+        onBuy={handleBuyProduct}
+        isAdminView={isAdminDetailView}
       />
 
     </div>
