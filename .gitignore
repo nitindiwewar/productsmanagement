@@ -1,0 +1,19 @@
+# Node / React
+node_modules/
+frontend/dist/
+frontend/node_modules/
+.npm
+
+# Maven / Java
+backend/target/
+*.class
+*.jar
+*.war
+
+# IDE & OS
+.idea/
+.vscode/
+*.swp
+*.DS_Store
+Thumbs.db
+*.log
